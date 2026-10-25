@@ -383,13 +383,13 @@ function renderPrintBracket(bracket, map) {
   root.append(tree);
 }
 
-/** Single undivided box — names stacked with no internal rules. */
+/** Match box with Side A / Side B split by an inner divider. */
 function renderPrintMatch(match, showNames, map, teamSize) {
   const el = document.createElement("article");
   el.className = "print-match";
-  const body = document.createElement("div");
-  body.className = "print-match-body";
   for (let si = 0; si < 2; si++) {
+    const side = document.createElement("div");
+    side.className = "print-side";
     const slots = match.sides[si]?.slots || [];
     for (let i = 0; i < teamSize; i++) {
       const line = document.createElement("div");
@@ -407,10 +407,10 @@ function renderPrintMatch(match, showNames, map, teamSize) {
         line.classList.add("print-slot-blank");
         line.innerHTML = "&nbsp;";
       }
-      body.append(line);
+      side.append(line);
     }
+    el.append(side);
   }
-  el.append(body);
   return el;
 }
 

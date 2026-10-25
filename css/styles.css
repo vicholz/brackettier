@@ -1043,12 +1043,6 @@ body::before {
     page-break-inside: avoid;
   }
 
-  .print-match *,
-  .print-champion * {
-    border: none !important;
-    box-shadow: none !important;
-  }
-
   /* Horizontal connector toward next round (at box mid) */
   .print-round:not(.print-champion-col) .print-match-anchor::after {
     content: "";
@@ -1077,16 +1071,15 @@ body::before {
     pointer-events: none;
   }
 
-  .print-match-body {
-    display: flex;
-    flex-direction: column;
-    gap: 0.15rem;
-    padding: 0.35rem 0.5rem;
-    border: none !important;
-    background: transparent;
+  /* Side A / Side B — inner rule splits the two sides (not handwriting lines) */
+  .print-side {
+    padding: 0.25rem 0.5rem;
   }
 
-  /* No inner rules — outer box + tree connectors only */
+  .print-side + .print-side {
+    border-top: 1.5px solid #111;
+  }
+
   .print-slot {
     min-height: 0.95rem;
     font-size: 0.7rem;
@@ -1096,9 +1089,12 @@ body::before {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    border: none !important;
-    box-shadow: none !important;
+    border: none;
     background: transparent;
+  }
+
+  .print-slot + .print-slot {
+    margin-top: 0.1rem;
   }
 
   .print-slot-blank {
