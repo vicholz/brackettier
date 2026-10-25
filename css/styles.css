@@ -984,8 +984,8 @@ body::before {
 
   .print-tree {
     --print-gutter: 1.1rem;
-    /* Tight per-seed row: just above match box height so later join rails stay short */
-    --print-row-h: calc(2.15rem + var(--print-team-size, 1) * 1.05rem);
+    /* Per-seed row: roomy gap between Round 1 matches; later rounds follow feeder bands */
+    --print-row-h: calc(3.4rem + var(--print-team-size, 1) * 1.3rem);
     display: flex;
     flex-direction: row;
     align-items: stretch;
