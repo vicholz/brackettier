@@ -385,6 +385,50 @@ function runAutoAssign({ reshuffle }) {
   toast(result.message);
 }
 
+const DEMO_NAMES = [
+  "Captain Noodle",
+  "Sir Quacksalot",
+  "Princess Beanbag",
+  "Professor Wiggle",
+  "Duke Butterscotch",
+  "Lady Marshmallow",
+  "Baron Von Biscuit",
+  "Countess Popcorn",
+  "Admiral Sockpuppet",
+  "Mayor Pickles",
+  "Ziggy Moonbeam",
+  "Fluffy McSnuggle",
+];
+
+/** Replace app state with a clean, repeatable 12-person 1v1 demo bracket. */
+function loadDemo() {
+  const people = DEMO_NAMES.map((name) => ({ id: uid(), name }));
+  const bracket = {
+    id: uid(),
+    name: "Whimsy Cup",
+    teamSize: 1,
+    rounds: [[]],
+  };
+  // 12 people → 6 first-round matches
+  for (let i = 0; i < 6; i++) addFirstRoundMatch(bracket);
+  autoAssignPeople(bracket, people, { reshuffle: true });
+
+  state = {
+    version: state.version || 1,
+    people,
+    brackets: [bracket],
+    activeBracketId: bracket.id,
+  };
+  persist();
+  renderPeople();
+  renderBrackets();
+  setView("brackets");
+  if (els.assignStatus) {
+    els.assignStatus.textContent = "Demo loaded: 12 whimsical names in Whimsy Cup (1v1).";
+  }
+  toast("Demo loaded — 12 names, Whimsy Cup bracket");
+}
+
 /* —— Events —— */
 
 function wireEvents() {
@@ -527,6 +571,17 @@ function wireEvents() {
     applySlotAssignment(null);
     slotContext = null;
     els.dialogSlot.close();
+  });
+
+  document.getElementById("btn-demo").addEventListener("click", () => {
+    if (
+      state.people.length || state.brackets.length
+        ? !confirm("Replace all current data with the DEMO tournament?")
+        : false
+    ) {
+      return;
+    }
+    loadDemo();
   });
 
   document.getElementById("btn-print").addEventListener("click", () => {

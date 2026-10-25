@@ -9,6 +9,15 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/styles.css" />
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-RK0SQEGSD5"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-RK0SQEGSD5');
+  </script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -24,6 +33,7 @@
       <button type="button" class="nav-btn" data-view="data">Data</button>
     </nav>
     <div class="header-actions">
+      <button type="button" class="btn btn-secondary" id="btn-demo" title="Load a sample tournament with 12 whimsical names">DEMO</button>
       <button type="button" class="btn btn-ghost" id="btn-print" title="Print current bracket">Print</button>
     </div>
   </header>

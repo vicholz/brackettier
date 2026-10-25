@@ -289,10 +289,21 @@ body::before {
   background: var(--chalk);
 }
 
+.header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  justify-content: flex-end;
+}
+
 .header-actions .btn-ghost {
   background: color-mix(in srgb, var(--chalk) 10%, transparent);
   color: var(--chalk);
   border-color: color-mix(in srgb, var(--chalk) 28%, transparent);
+}
+
+.header-actions .btn-secondary {
+  border-color: color-mix(in srgb, var(--brass) 55%, #000);
 }
 
 .btn-danger {

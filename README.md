@@ -4,6 +4,8 @@ Browser-only tournament bracket maker. Vanilla HTML, CSS, and JavaScript — no 
 
 **Live:** [https://vicholz.github.io/brackettier/](https://vicholz.github.io/brackettier/)
 
+Click **DEMO** in the header to reset to a sample 12-person “Whimsy Cup” bracket (replaces current local data).
+
 ## Open locally
 
 Any static file server works. From this directory:
