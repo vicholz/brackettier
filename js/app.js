@@ -294,14 +294,18 @@ function renderMatch(bracket, roundIndex, matchIndex, match, map) {
     card.append(sideEl);
   });
 
+  const footer = document.createElement("div");
+  footer.className = "match-footer";
+  const labelSpan = document.createElement("span");
+  labelSpan.textContent = `Match ${matchIndex + 1}`;
+  footer.append(labelSpan);
   if (isFirst) {
-    const footer = document.createElement("div");
-    footer.className = "match-footer";
-    footer.innerHTML = `<span>Match ${matchIndex + 1}</span>`;
     const del = document.createElement("button");
     del.type = "button";
-    del.className = "btn btn-ghost";
-    del.textContent = "Remove";
+    del.className = "match-remove";
+    del.setAttribute("aria-label", "Remove match");
+    del.title = "Remove match";
+    del.textContent = "×";
     del.addEventListener("click", () => {
       if (!confirm("Remove this match?")) return;
       removeFirstRoundMatch(bracket, match.id);
@@ -309,13 +313,8 @@ function renderMatch(bracket, roundIndex, matchIndex, match, map) {
       renderBracketBoard(bracket);
     });
     footer.append(del);
-    card.append(footer);
-  } else {
-    const footer = document.createElement("div");
-    footer.className = "match-footer";
-    footer.innerHTML = `<span>Match ${matchIndex + 1}</span>`;
-    card.append(footer);
   }
+  card.append(footer);
 
   return card;
 }

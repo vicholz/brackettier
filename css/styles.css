@@ -19,6 +19,10 @@
   --font-display: "Syne", sans-serif;
   --font-body: "DM Sans", sans-serif;
   --header-h: 4.25rem;
+  /* Five round columns + gaps; content width sized to fit them */
+  --round-col-w: 15.5rem;
+  --round-gap: 1.15rem;
+  --bracket-5col: calc(5 * var(--round-col-w) + 4 * var(--round-gap));
 }
 
 *,
@@ -199,7 +203,7 @@ body::before {
 .app-main {
   position: relative;
   z-index: 1;
-  width: min(1120px, 100%);
+  width: min(calc(var(--bracket-5col) + 2rem), 100%);
   margin: 0 auto;
   padding: 1.25rem 1rem 3.5rem;
 }
@@ -492,20 +496,28 @@ body::before {
   }
 }
 
-/* Bracket board */
+/* Bracket board — columns centered; scroll when fewer than viewport allows */
 
 .bracket-board {
   display: flex;
-  gap: 1.25rem;
+  justify-content: safe center;
+  justify-content: center;
+  gap: var(--round-gap);
   overflow-x: auto;
   padding-bottom: 1rem;
   -webkit-overflow-scrolling: touch;
   scroll-snap-type: x proximity;
 }
 
+@supports (justify-content: safe center) {
+  .bracket-board {
+    justify-content: safe center;
+  }
+}
+
 .round-col {
   flex: 0 0 auto;
-  width: min(17.5rem, 82vw);
+  width: min(var(--round-col-w), 82vw);
   scroll-snap-align: start;
   display: flex;
   flex-direction: column;
@@ -648,18 +660,39 @@ body::before {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.4rem 0.65rem;
+  gap: 0.35rem;
+  min-height: 1.85rem;
+  padding: 0.2rem 0.55rem;
   background: color-mix(in srgb, var(--paper) 70%, white);
   border-top: 1px solid var(--line);
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: var(--ink-soft);
 }
 
-.match-footer .btn {
-  min-height: 2.1rem;
-  font-size: 0.8rem;
-  padding-inline: 0.65rem;
+.match-remove {
+  appearance: none;
+  flex-shrink: 0;
+  width: 1.6rem;
+  height: 1.6rem;
+  min-height: 0;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.match-remove:hover,
+.match-remove:focus-visible {
+  color: var(--danger);
+  background: var(--danger-bg);
+  border-color: color-mix(in srgb, var(--danger) 25%, white);
+  outline: none;
 }
 
 /* Data view */
