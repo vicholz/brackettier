@@ -459,11 +459,13 @@ function syncDemoControl() {
   if (!el) return;
   if (isDemoDeepLink()) {
     el.textContent = "EXIT DEMO";
+    el.dataset.mode = "exit";
     el.setAttribute("href", "#");
     el.title = "Exit demo and clear sample data";
     el.setAttribute("aria-label", "Exit demo");
   } else {
     el.textContent = "DEMO";
+    el.dataset.mode = "enter";
     el.setAttribute("href", "#demo");
     el.title = "Load a sample tournament with 12 whimsical names";
     el.setAttribute("aria-label", "Load demo");
@@ -635,7 +637,9 @@ function wireEvents() {
 
   const demoLink = document.getElementById("btn-demo");
   demoLink.addEventListener("click", (e) => {
-    if (isDemoDeepLink() || demoLink.textContent.trim() === "EXIT DEMO") {
+    // Use the control label (not the hash) so entering #demo isn’t treated as exit
+    // when the browser updates location.hash before this handler runs.
+    if (demoLink.dataset.mode === "exit") {
       e.preventDefault();
       exitDemo();
     }
