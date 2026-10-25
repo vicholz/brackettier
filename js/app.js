@@ -20,6 +20,7 @@ import {
   canPickWinner,
   autoAssignPeople,
   countEmptyFirstRoundSlots,
+  clearBracketAssignments,
 } from "./bracket.js";
 import {
   stateToJson,
@@ -551,6 +552,25 @@ function wireEvents() {
         : "Clear existing first-round assignments and reshuffle from the people pool?";
     if (!confirm(msg)) return;
     runAutoAssign({ reshuffle: true });
+  });
+
+  document.getElementById("btn-clear-assignments").addEventListener("click", () => {
+    const bracket = activeBracket();
+    if (!bracket) return;
+    if (
+      !confirm(
+        `Clear all assignments in “${bracket.name}”? This removes people from first-round slots and clears winners.`
+      )
+    ) {
+      return;
+    }
+    clearBracketAssignments(bracket);
+    persist();
+    renderBracketBoard(bracket);
+    if (els.assignStatus) {
+      els.assignStatus.textContent = "Assignments cleared.";
+    }
+    toast("Assignments cleared");
   });
 
   document.getElementById("btn-rebuild").addEventListener("click", () => {
