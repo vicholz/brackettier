@@ -2,6 +2,8 @@
 
 Browser-only tournament bracket maker. Vanilla HTML, CSS, and JavaScript — no build step.
 
+**Live:** [https://vicholz.github.io/brackettier/](https://vicholz.github.io/brackettier/)
+
 ## Open locally
 
 Any static file server works. From this directory:
