@@ -19,7 +19,7 @@
   --font-display: "Syne", sans-serif;
   --font-body: "DM Sans", sans-serif;
   --header-h: 4.25rem;
-  /* Five round columns + gaps; content width sized to fit them */
+  /* Comfortably fit 5 round columns; more than 5 scroll horizontally */
   --round-col-w: 15.5rem;
   --round-gap: 1.15rem;
   --bracket-5col: calc(5 * var(--round-col-w) + 4 * var(--round-gap));
@@ -203,7 +203,8 @@ body::before {
 .app-main {
   position: relative;
   z-index: 1;
-  width: min(calc(var(--bracket-5col) + 2rem), 100%);
+  /* Horizontal padding (2rem) + a little slack so 5 cols don’t force a scrollbar */
+  width: min(calc(var(--bracket-5col) + 2.5rem), 100%);
   margin: 0 auto;
   padding: 1.25rem 1rem 3.5rem;
 }
@@ -496,18 +497,19 @@ body::before {
   }
 }
 
-/* Bracket board — columns centered; scrollable when they overflow */
-
+/*
+ * Bracket board:
+ * - ≤5 columns: centered via flex spacers (no flex gap — gap would pad spacers too)
+ * - >5 columns: spacers collapse; overflow-x scrolls to extras (uncapped)
+ */
 .bracket-board {
   display: flex;
-  gap: var(--round-gap);
   overflow-x: auto;
   padding-bottom: 1rem;
   -webkit-overflow-scrolling: touch;
   scroll-snap-type: x proximity;
 }
 
-/* Equal flex spacers center columns; shrink away when content overflows */
 .bracket-board::before,
 .bracket-board::after {
   content: "";
@@ -522,6 +524,10 @@ body::before {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+}
+
+.round-col + .round-col {
+  margin-left: var(--round-gap);
 }
 
 .round-title {
