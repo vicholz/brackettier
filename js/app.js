@@ -310,16 +310,35 @@ function renderPrintBracket(bracket, map) {
     matches.className = "print-matches";
     round.forEach((match, mi) => {
       const band = bands[ri]?.[mi] || { start: 0, end: 1 };
+      const span = band.end - band.start || 1;
+      let boxMid = 0.5; // fraction within band
       const anchor = document.createElement("div");
       anchor.className = "print-match-anchor";
       anchor.style.setProperty("--band-start", String(band.start));
       anchor.style.setProperty("--band-end", String(band.end));
-      // Vertical join when this match spans more than one prior-round slot
-      if (ri > 0 && band.end - band.start > 1 / seedCount + 0.001) {
-        const rail = document.createElement("span");
-        rail.className = "print-join-rail";
-        rail.setAttribute("aria-hidden", "true");
-        anchor.append(rail);
+      // Short vertical join only when exactly two previous-round feeders;
+      // box + horizontals sit at the midpoint between those feeder mids.
+      if (ri > 0) {
+        const left = bands[ri - 1]?.[mi * 2];
+        const right = bands[ri - 1]?.[mi * 2 + 1];
+        if (left && right) {
+          const mid1 = (left.start + left.end) / 2;
+          const mid2 = (right.start + right.end) / 2;
+          boxMid = ((mid1 + mid2) / 2 - band.start) / span;
+          const rail = document.createElement("span");
+          rail.className = "print-join-rail";
+          rail.setAttribute("aria-hidden", "true");
+          rail.style.top = `${((mid1 - band.start) / span) * 100}%`;
+          rail.style.bottom = `${((band.end - mid2) / span) * 100}%`;
+          anchor.append(rail);
+        }
+      }
+      anchor.style.setProperty("--box-mid", String(boxMid));
+      if (ri === total - 1 && mi === 0) {
+        // Champion reuses Final band + box mid (no tall stem)
+        tree.dataset.champBandStart = String(band.start);
+        tree.dataset.champBandEnd = String(band.end);
+        tree.dataset.champBoxMid = String(boxMid);
       }
       anchor.append(renderPrintMatch(match, ri === 0, map, bracket.teamSize));
       matches.append(anchor);
@@ -328,8 +347,7 @@ function renderPrintBracket(bracket, map) {
     tree.append(col);
   });
 
-  // Blank champion, centered on the final match band
-  const finalBand = bands[total - 1]?.[0] || { start: 0, end: 1 };
+  // Blank champion — same vertical mid as Final; horizontal only (no join rail)
   const champCol = document.createElement("div");
   champCol.className = "print-round print-round-blank print-champion-col";
   const champLabel = document.createElement("div");
@@ -339,14 +357,15 @@ function renderPrintBracket(bracket, map) {
   champMatches.className = "print-matches";
   const champAnchor = document.createElement("div");
   champAnchor.className = "print-match-anchor print-champion-anchor";
-  champAnchor.style.setProperty("--band-start", String(finalBand.start));
-  champAnchor.style.setProperty("--band-end", String(finalBand.end));
-  if (finalBand.end - finalBand.start > 1 / seedCount + 0.001) {
-    const rail = document.createElement("span");
-    rail.className = "print-join-rail";
-    rail.setAttribute("aria-hidden", "true");
-    champAnchor.append(rail);
-  }
+  champAnchor.style.setProperty(
+    "--band-start",
+    tree.dataset.champBandStart || String(bands[total - 1]?.[0]?.start ?? 0)
+  );
+  champAnchor.style.setProperty(
+    "--band-end",
+    tree.dataset.champBandEnd || String(bands[total - 1]?.[0]?.end ?? 1)
+  );
+  champAnchor.style.setProperty("--box-mid", tree.dataset.champBoxMid || "0.5");
   const champBox = document.createElement("div");
   champBox.className = "print-champion";
   for (let i = 0; i < (bracket.teamSize || 1); i++) {
@@ -363,12 +382,13 @@ function renderPrintBracket(bracket, map) {
   root.append(tree);
 }
 
+/** Single undivided box — names stacked with no internal rules. */
 function renderPrintMatch(match, showNames, map, teamSize) {
   const el = document.createElement("article");
   el.className = "print-match";
+  const body = document.createElement("div");
+  body.className = "print-match-body";
   for (let si = 0; si < 2; si++) {
-    const side = document.createElement("div");
-    side.className = "print-side";
     const slots = match.sides[si]?.slots || [];
     for (let i = 0; i < teamSize; i++) {
       const line = document.createElement("div");
@@ -386,10 +406,10 @@ function renderPrintMatch(match, showNames, map, teamSize) {
         line.classList.add("print-slot-blank");
         line.innerHTML = "&nbsp;";
       }
-      side.append(line);
+      body.append(line);
     }
-    el.append(side);
   }
+  el.append(body);
   return el;
 }
 

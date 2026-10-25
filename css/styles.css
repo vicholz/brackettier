@@ -984,8 +984,8 @@ body::before {
 
   .print-tree {
     --print-gutter: 1.1rem;
-    /* Per-seed-row height must exceed match box height so bands don’t overlap */
-    --print-row-h: calc(2.75rem + var(--print-team-size, 1) * 1.15rem);
+    /* Tight per-seed row: just above match box height so later join rails stay short */
+    --print-row-h: calc(2.15rem + var(--print-team-size, 1) * 1.05rem);
     display: flex;
     flex-direction: row;
     align-items: stretch;
@@ -1019,34 +1019,41 @@ body::before {
     min-height: 12rem;
   }
 
-  /* Feeder band: centers the match box on the pair from the prior round */
+  /* Feeder band: box sits at --box-mid (feeder-mid average), not band center */
   .print-match-anchor {
     position: absolute;
     left: 0;
     right: 0;
     top: calc(var(--band-start) * 100%);
     height: calc((var(--band-end) - var(--band-start)) * 100%);
-    display: flex;
-    align-items: center;
     box-sizing: border-box;
-    padding: 0.12rem 0;
   }
 
   .print-match,
   .print-champion {
-    position: relative;
-    width: 100%;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(var(--box-mid, 0.5) * 100%);
+    transform: translateY(-50%);
+    width: auto;
     border: 1.5px solid #111;
     background: white;
     break-inside: avoid;
     page-break-inside: avoid;
   }
 
-  /* Horizontal connector toward next round (mid of feeder band) */
+  .print-match *,
+  .print-champion * {
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Horizontal connector toward next round (at box mid) */
   .print-round:not(.print-champion-col) .print-match-anchor::after {
     content: "";
     position: absolute;
-    top: 50%;
+    top: calc(var(--box-mid, 0.5) * 100%);
     right: calc(var(--print-gutter) / -2);
     width: calc(var(--print-gutter) / 2);
     border-top: 1.5px solid #111;
@@ -1056,56 +1063,46 @@ body::before {
   .print-round:not(.print-round-seed) .print-match-anchor::before {
     content: "";
     position: absolute;
-    top: 50%;
+    top: calc(var(--box-mid, 0.5) * 100%);
     left: calc(var(--print-gutter) / -2);
     width: calc(var(--print-gutter) / 2);
     border-top: 1.5px solid #111;
   }
 
-  /* Vertical join rail for matches that span a pair of feeders */
+  /* Vertical join: only between the two feeder midpoints (set via top/bottom inline) */
   .print-join-rail {
     position: absolute;
     left: calc(var(--print-gutter) / -2);
-    top: 12%;
-    bottom: 12%;
     border-left: 1.5px solid #111;
     pointer-events: none;
   }
 
-  .print-side {
-    padding: 0.2rem 0.45rem;
-    border: none;
+  .print-match-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.35rem 0.5rem;
+    border: none !important;
     background: transparent;
   }
 
   /* No inner rules — outer box + tree connectors only */
-  .print-side + .print-side {
-    border: none;
-    border-top: none;
-    box-shadow: none;
-  }
-
   .print-slot {
     min-height: 0.95rem;
     font-size: 0.7rem;
     line-height: 1.2;
-    padding: 0.06rem 0.05rem;
+    padding: 0;
+    margin: 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    border: none;
-    box-shadow: none;
-  }
-
-  .print-slot + .print-slot {
-    border: none;
-    border-top: none;
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent;
   }
 
   .print-slot-blank {
     min-height: 0.95rem;
-    border: none;
-    border-bottom: none;
   }
 
   .print-slot-filled {
@@ -1117,6 +1114,6 @@ body::before {
   }
 
   .print-champion {
-    padding: 0.35rem 0.45rem;
+    padding: 0.35rem 0.5rem;
   }
 }
