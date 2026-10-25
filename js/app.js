@@ -197,7 +197,6 @@ function renderBracketBoard(bracket) {
   const map = peopleById();
   const board = els.bracketBoard;
   board.innerHTML = "";
-  board.style.setProperty("--team-size", String(bracket.teamSize || 1));
 
   const rounds = bracket.rounds;
   const total = rounds.length;

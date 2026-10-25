@@ -25,24 +25,8 @@
   --bracket-5col: calc(5 * var(--round-col-w) + 4 * var(--round-gap));
   --slot-h: 2.5rem;
   --slot-gap: 0.3rem;
-  --side-pad-y: 1.1rem;
   --side-meta-h: 2.25rem;
-  --side-stack-gap: 0.45rem;
   --footer-h: 1.85rem;
-  --team-size: 1;
-  /* Fixed card height from team size — same in every round/column */
-  --match-card-h: calc(
-    2 * (
-      var(--side-pad-y)
-      + (var(--team-size) * var(--slot-h))
-      + ((var(--team-size) - 1) * var(--slot-gap))
-      + var(--side-stack-gap)
-      + var(--side-meta-h)
-    )
-    + 1px
-    + var(--footer-h)
-    + 3px
-  );
 }
 
 *,
@@ -563,28 +547,29 @@ body::before {
   left: 0;
 }
 
+/*
+ * Cards size to their slots (works for 1v1–5v5). Same structure in every
+ * round — including a reserved remove-slot — keeps heights uniform without
+ * a fixed height that clips larger team sizes.
+ */
 .match-card {
-  height: var(--match-card-h);
-  max-height: var(--match-card-h);
   background: var(--chalk);
   border: 1.5px solid var(--line);
   border-radius: var(--radius);
-  overflow: hidden;
+  overflow: visible;
   box-shadow: 0 4px 16px rgba(15, 46, 32, 0.06);
   display: flex;
   flex-direction: column;
 }
 
 .match-side {
-  flex: 1 1 0;
-  min-height: 0;
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
   padding: 0.55rem 0.55rem 0.55rem 0.65rem;
   border-left: 4px solid transparent;
   transition: background 0.15s ease, border-color 0.15s ease;
-  overflow: hidden;
 }
 
 .match-side + .match-side {
@@ -604,8 +589,7 @@ body::before {
   display: flex;
   flex-direction: column;
   gap: var(--slot-gap);
-  flex: 1 1 auto;
-  min-height: 0;
+  flex: 0 0 auto;
 }
 
 .slot-btn {
@@ -613,7 +597,7 @@ body::before {
   width: 100%;
   height: var(--slot-h);
   min-height: var(--slot-h);
-  max-height: var(--slot-h);
+  box-sizing: border-box;
   text-align: left;
   font: inherit;
   font-weight: 500;
