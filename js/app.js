@@ -160,6 +160,7 @@ function renderPeople() {
 function renderBrackets() {
   const select = els.bracketSelect;
   select.innerHTML = "";
+  if (els.assignStatus) els.assignStatus.textContent = "";
 
   if (!state.brackets.length) {
     els.bracketWorkspace.hidden = true;
