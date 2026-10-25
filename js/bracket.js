@@ -138,6 +138,24 @@ export function removeFirstRoundMatch(bracket, matchId) {
   return rebuildLaterRounds(bracket);
 }
 
+/** True when neither side has anyone assigned. */
+export function matchIsEmpty(match) {
+  return !match?.sides?.some((side) => sideHasAnyone(side));
+}
+
+/**
+ * Drop first-round matches with no people on either side, then rebuild.
+ * Used after top-down auto-assign so unused lower matches disappear.
+ */
+export function pruneEmptyFirstRoundMatches(bracket) {
+  if (!bracket.rounds[0]?.length) return { bracket, removed: 0 };
+  const before = bracket.rounds[0].length;
+  bracket.rounds[0] = bracket.rounds[0].filter((m) => !matchIsEmpty(m));
+  const removed = before - bracket.rounds[0].length;
+  rebuildLaterRounds(bracket);
+  return { bracket, removed };
+}
+
 export function resizeBracketTeams(bracket, teamSize) {
   bracket.teamSize = teamSize;
   for (const round of bracket.rounds) {
@@ -224,18 +242,19 @@ function shuffleInPlace(arr) {
 }
 
 /**
- * Fill empty first-round slots from the people pool.
- * Round-robins across sides so shuffled people aren’t stacked on one team.
+ * Fill empty first-round slots from the people pool (top-down).
  * Never assigns the same person twice in a bracket. Does not overwrite
- * existing slots unless `reshuffle` is true.
+ * existing slots unless `reshuffle` is true. After filling, removes
+ * first-round matches that still have nobody on either side.
  *
- * @returns {{ filled: number, remainingEmpty: number, skipped: boolean, message: string }}
+ * @returns {{ filled: number, remainingEmpty: number, removedMatches: number, skipped: boolean, message: string }}
  */
 export function autoAssignPeople(bracket, people, { reshuffle = false } = {}) {
   if (!Array.isArray(people) || !people.length) {
     return {
       filled: 0,
       remainingEmpty: countEmptyFirstRoundSlots(bracket),
+      removedMatches: 0,
       skipped: true,
       message: "No people in the pool. Add names on the People tab.",
     };
@@ -251,6 +270,7 @@ export function autoAssignPeople(bracket, people, { reshuffle = false } = {}) {
     return {
       filled: 0,
       remainingEmpty: 0,
+      removedMatches: 0,
       skipped: true,
       message: "Add a first-round match before auto-assigning.",
     };
@@ -261,6 +281,7 @@ export function autoAssignPeople(bracket, people, { reshuffle = false } = {}) {
     return {
       filled: 0,
       remainingEmpty: 0,
+      removedMatches: 0,
       skipped: true,
       message: "All slots are already filled. Use Reshuffle to re-assign.",
     };
@@ -292,8 +313,8 @@ export function autoAssignPeople(bracket, people, { reshuffle = false } = {}) {
     filled += 1;
   }
 
+  const { removed: removedMatches } = pruneEmptyFirstRoundMatches(bracket);
   const remainingEmpty = countEmptyFirstRoundSlots(bracket);
-  rebuildLaterRounds(bracket);
 
   let message;
   if (filled === 0) {
@@ -305,6 +326,9 @@ export function autoAssignPeople(bracket, people, { reshuffle = false } = {}) {
       ? `Reshuffled — assigned ${filled} slot${filled === 1 ? "" : "s"}.`
       : `Assigned ${filled} slot${filled === 1 ? "" : "s"}.`;
   }
+  if (removedMatches > 0) {
+    message += ` Removed ${removedMatches} empty match${removedMatches === 1 ? "" : "es"}.`;
+  }
 
-  return { filled, remainingEmpty, skipped: false, message };
+  return { filled, remainingEmpty, removedMatches, skipped: false, message };
 }
