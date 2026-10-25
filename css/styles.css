@@ -23,6 +23,26 @@
   --round-col-w: 15.5rem;
   --round-gap: 1.15rem;
   --bracket-5col: calc(5 * var(--round-col-w) + 4 * var(--round-gap));
+  --slot-h: 2.5rem;
+  --slot-gap: 0.3rem;
+  --side-pad-y: 1.1rem;
+  --side-meta-h: 2.25rem;
+  --side-stack-gap: 0.45rem;
+  --footer-h: 1.85rem;
+  --team-size: 1;
+  /* Fixed card height from team size — same in every round/column */
+  --match-card-h: calc(
+    2 * (
+      var(--side-pad-y)
+      + (var(--team-size) * var(--slot-h))
+      + ((var(--team-size) - 1) * var(--slot-gap))
+      + var(--side-stack-gap)
+      + var(--side-meta-h)
+    )
+    + 1px
+    + var(--footer-h)
+    + 3px
+  );
 }
 
 *,
@@ -544,6 +564,8 @@ body::before {
 }
 
 .match-card {
+  height: var(--match-card-h);
+  max-height: var(--match-card-h);
   background: var(--chalk);
   border: 1.5px solid var(--line);
   border-radius: var(--radius);
@@ -554,12 +576,15 @@ body::before {
 }
 
 .match-side {
+  flex: 1 1 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
   padding: 0.55rem 0.55rem 0.55rem 0.65rem;
   border-left: 4px solid transparent;
   transition: background 0.15s ease, border-color 0.15s ease;
+  overflow: hidden;
 }
 
 .match-side + .match-side {
@@ -578,13 +603,17 @@ body::before {
 .side-slots {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: var(--slot-gap);
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .slot-btn {
   appearance: none;
   width: 100%;
-  min-height: 2.5rem;
+  height: var(--slot-h);
+  min-height: var(--slot-h);
+  max-height: var(--slot-h);
   text-align: left;
   font: inherit;
   font-weight: 500;
@@ -594,6 +623,9 @@ body::before {
   background: color-mix(in srgb, var(--paper) 55%, white);
   color: var(--ink);
   cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .slot-btn:hover,
@@ -620,6 +652,10 @@ body::before {
   justify-content: space-between;
   gap: 0.5rem;
   margin-top: 0.2rem;
+  flex: 0 0 var(--side-meta-h);
+  height: var(--side-meta-h);
+  min-height: var(--side-meta-h);
+  max-height: var(--side-meta-h);
 }
 
 .side-label {
@@ -632,7 +668,9 @@ body::before {
 
 .win-btn {
   appearance: none;
-  min-height: 2.25rem;
+  height: 2.1rem;
+  min-height: 2.1rem;
+  max-height: 2.1rem;
   padding: 0 0.75rem;
   border-radius: 8px;
   border: 1.5px solid var(--field);
@@ -642,6 +680,7 @@ body::before {
   font-size: 0.85rem;
   font-weight: 700;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .win-btn:hover:not(:disabled),
@@ -667,17 +706,30 @@ body::before {
   justify-content: space-between;
   align-items: center;
   gap: 0.35rem;
-  min-height: 1.85rem;
-  padding: 0.2rem 0.55rem;
+  flex: 0 0 var(--footer-h);
+  height: var(--footer-h);
+  min-height: var(--footer-h);
+  max-height: var(--footer-h);
+  padding: 0 0.55rem;
+  box-sizing: border-box;
   background: color-mix(in srgb, var(--paper) 70%, white);
   border-top: 1px solid var(--line);
   font-size: 0.75rem;
   color: var(--ink-soft);
 }
 
+/* Same footprint whether a remove control is present or not */
+.match-remove-slot {
+  flex-shrink: 0;
+  width: 1.6rem;
+  height: 1.6rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .match-remove {
   appearance: none;
-  flex-shrink: 0;
   width: 1.6rem;
   height: 1.6rem;
   min-height: 0;

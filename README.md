@@ -4,7 +4,7 @@ Browser-only tournament bracket maker. Vanilla HTML, CSS, and JavaScript — no 
 
 **Live:** [https://vicholz.github.io/brackettier/](https://vicholz.github.io/brackettier/)
 
-Click **DEMO** in the header to reset to a sample 12-person “Whimsy Cup” bracket (replaces current local data).
+**Demo link:** [https://vicholz.github.io/brackettier/#demo](https://vicholz.github.io/brackettier/#demo) — on load, seeds 12 whimsical names into a 1v1 “Whimsy Cup” bracket (replaces local data; no confirm). The `#demo` hash is left in place so refresh re-applies the demo. Header **DEMO** does the same after confirm when you already have data.
 
 ## Open locally
 

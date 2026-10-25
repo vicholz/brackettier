@@ -196,6 +196,7 @@ function renderBracketBoard(bracket) {
   const map = peopleById();
   const board = els.bracketBoard;
   board.innerHTML = "";
+  board.style.setProperty("--team-size", String(bracket.teamSize || 1));
 
   const rounds = bracket.rounds;
   const total = rounds.length;
@@ -298,7 +299,9 @@ function renderMatch(bracket, roundIndex, matchIndex, match, map) {
   footer.className = "match-footer";
   const labelSpan = document.createElement("span");
   labelSpan.textContent = `Match ${matchIndex + 1}`;
-  footer.append(labelSpan);
+  const removeSlot = document.createElement("span");
+  removeSlot.className = "match-remove-slot";
+  if (!isFirst) removeSlot.setAttribute("aria-hidden", "true");
   if (isFirst) {
     const del = document.createElement("button");
     del.type = "button";
@@ -312,8 +315,9 @@ function renderMatch(bracket, roundIndex, matchIndex, match, map) {
       persist();
       renderBracketBoard(bracket);
     });
-    footer.append(del);
+    removeSlot.append(del);
   }
+  footer.append(labelSpan, removeSlot);
   card.append(footer);
 
   return card;
@@ -676,8 +680,18 @@ function applyImport(incoming) {
   setView("brackets");
 }
 
+/** Deep-link: `#demo` loads the sample tournament (no confirm). Hash is kept. */
+function isDemoDeepLink() {
+  return (location.hash || "").replace(/^#/, "").toLowerCase() === "demo";
+}
+
 async function boot() {
   wireEvents();
+
+  if (isDemoDeepLink()) {
+    loadDemo();
+    return;
+  }
 
   const fromHash = await tryLoadFromHash();
   if (fromHash) {
