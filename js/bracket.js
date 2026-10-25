@@ -267,35 +267,29 @@ export function autoAssignPeople(bracket, people, { reshuffle = false } = {}) {
   }
 
   const used = firstRoundAssignedIds(bracket);
+  // Shuffle who; where they land is always top-down (stable bracket order).
   const available = shuffleInPlace(
     people.filter((p) => p?.id && !used.has(p.id)).map((p) => String(p.id))
   );
 
-  // Sides with empty slots. Fill each side completely before the next so
-  // 2v2/3v3 get full teams (not one person spread across every side).
-  // Shuffle side order so consecutive pool names aren’t always Match 1 Side A.
-  const buckets = [];
+  // Empty slots in visual order: match top→bottom, side A then B, slots top→bottom.
+  const empties = [];
   for (const match of first) {
     for (let si = 0; si < match.sides.length; si++) {
-      const empties = [];
       match.sides[si].slots.forEach((id, slotIndex) => {
-        if (id == null || id === "") empties.push(slotIndex);
+        if (id == null || id === "") {
+          empties.push({ match, sideIndex: si, slotIndex });
+        }
       });
-      if (empties.length) buckets.push({ match, sideIndex: si, empties });
     }
   }
-  shuffleInPlace(buckets);
 
   let filled = 0;
-  let ai = 0;
-  for (const bucket of buckets) {
-    while (bucket.empties.length && ai < available.length) {
-      const slotIndex = bucket.empties.shift();
-      bucket.match.sides[bucket.sideIndex].slots[slotIndex] = available[ai];
-      ai += 1;
-      filled += 1;
-    }
-    if (ai >= available.length) break;
+  const n = Math.min(available.length, empties.length);
+  for (let i = 0; i < n; i++) {
+    const { match, sideIndex, slotIndex } = empties[i];
+    match.sides[sideIndex].slots[slotIndex] = available[i];
+    filled += 1;
   }
 
   const remainingEmpty = countEmptyFirstRoundSlots(bracket);
