@@ -496,12 +496,10 @@ body::before {
   }
 }
 
-/* Bracket board — columns centered; scroll when fewer than viewport allows */
+/* Bracket board — columns centered; scrollable when they overflow */
 
 .bracket-board {
   display: flex;
-  justify-content: safe center;
-  justify-content: center;
   gap: var(--round-gap);
   overflow-x: auto;
   padding-bottom: 1rem;
@@ -509,10 +507,12 @@ body::before {
   scroll-snap-type: x proximity;
 }
 
-@supports (justify-content: safe center) {
-  .bracket-board {
-    justify-content: safe center;
-  }
+/* Equal flex spacers center columns; shrink away when content overflows */
+.bracket-board::before,
+.bracket-board::after {
+  content: "";
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 .round-col {
