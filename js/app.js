@@ -576,12 +576,16 @@ function wireEvents() {
     els.dialogSlot.close();
   });
 
-  document.getElementById("btn-demo").addEventListener("click", () => {
-    const hasData = state.people.length > 0 || state.brackets.length > 0;
-    if (hasData && !confirm("Replace all current data with the DEMO tournament?")) {
-      return;
+  const demoLink = document.getElementById("btn-demo");
+  // Re-run when already on #demo (hashchange won't fire for same hash)
+  demoLink.addEventListener("click", (e) => {
+    if (isDemoDeepLink()) {
+      e.preventDefault();
+      loadDemo();
     }
-    loadDemo();
+  });
+  window.addEventListener("hashchange", () => {
+    if (isDemoDeepLink()) loadDemo();
   });
 
   document.getElementById("btn-print").addEventListener("click", () => {
