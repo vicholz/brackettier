@@ -18,6 +18,8 @@ import {
   sideLabel,
   sideHasAnyone,
   canPickWinner,
+  autoAssignPeople,
+  countEmptyFirstRoundSlots,
 } from "./bracket.js";
 import {
   stateToJson,
@@ -49,6 +51,7 @@ const els = {
   teamSize: document.getElementById("team-size"),
   bracketBoard: document.getElementById("bracket-board"),
   championBanner: document.getElementById("champion-banner"),
+  assignStatus: document.getElementById("assign-status"),
   toast: document.getElementById("toast"),
   dialogBracket: document.getElementById("dialog-bracket"),
   formNewBracket: document.getElementById("form-new-bracket"),
@@ -369,6 +372,18 @@ function applySlotAssignment(personId) {
   renderBracketBoard(bracket);
 }
 
+function runAutoAssign({ reshuffle }) {
+  const bracket = activeBracket();
+  if (!bracket) return;
+  const result = autoAssignPeople(bracket, state.people, { reshuffle });
+  if (!result.skipped || result.filled > 0) {
+    persist();
+    renderBracketBoard(bracket);
+  }
+  if (els.assignStatus) els.assignStatus.textContent = result.message;
+  toast(result.message);
+}
+
 /* —— Events —— */
 
 function wireEvents() {
@@ -468,6 +483,22 @@ function wireEvents() {
     addFirstRoundMatch(bracket);
     persist();
     renderBracketBoard(bracket);
+  });
+
+  document.getElementById("btn-auto-assign").addEventListener("click", () => {
+    runAutoAssign({ reshuffle: false });
+  });
+
+  document.getElementById("btn-reshuffle").addEventListener("click", () => {
+    const bracket = activeBracket();
+    if (!bracket) return;
+    const empty = countEmptyFirstRoundSlots(bracket);
+    const msg =
+      empty === 0
+        ? "Clear all first-round assignments and reshuffle everyone into this bracket?"
+        : "Clear existing first-round assignments and reshuffle from the people pool?";
+    if (!confirm(msg)) return;
+    runAutoAssign({ reshuffle: true });
   });
 
   document.getElementById("btn-rebuild").addEventListener("click", () => {

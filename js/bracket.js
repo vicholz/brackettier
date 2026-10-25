@@ -169,12 +169,144 @@ export function roundName(roundIndex, totalRounds) {
 
 export function canPickWinner(match, sideIndex) {
   const side = match.sides[sideIndex];
-  const other = match.sides[sideIndex === 0 ? 1 : 0];
   if (!sideHasAnyone(side)) return false;
-  // Allow pick if this side has people; other can be empty (bye) or filled
-  if (!sideHasAnyone(other) && !match.bye) {
-    // Still allow marking a winner when opponent empty (treat as bye)
-    return true;
-  }
   return true;
+}
+
+/** Person ids already placed in first-round slots. */
+export function firstRoundAssignedIds(bracket) {
+  const used = new Set();
+  for (const match of bracket.rounds[0] || []) {
+    for (const side of match.sides) {
+      for (const id of side.slots) {
+        if (id != null && id !== "") used.add(id);
+      }
+    }
+  }
+  return used;
+}
+
+export function countEmptyFirstRoundSlots(bracket) {
+  let empty = 0;
+  for (const match of bracket.rounds[0] || []) {
+    for (const side of match.sides) {
+      for (const id of side.slots) {
+        if (id == null || id === "") empty += 1;
+      }
+    }
+  }
+  return empty;
+}
+
+function clearFirstRoundAssignments(bracket) {
+  for (const match of bracket.rounds[0] || []) {
+    for (const side of match.sides) {
+      side.slots = side.slots.map(() => null);
+    }
+    match.winner = null;
+  }
+  for (let r = 1; r < (bracket.rounds?.length || 0); r++) {
+    for (const m of bracket.rounds[r]) m.winner = null;
+  }
+}
+
+function shuffleInPlace(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+/**
+ * Fill empty first-round slots from the people pool.
+ * Round-robins across sides so shuffled people aren’t stacked on one team.
+ * Never assigns the same person twice in a bracket. Does not overwrite
+ * existing slots unless `reshuffle` is true.
+ *
+ * @returns {{ filled: number, remainingEmpty: number, skipped: boolean, message: string }}
+ */
+export function autoAssignPeople(bracket, people, { reshuffle = false } = {}) {
+  const first = bracket.rounds[0];
+  if (!first?.length) {
+    return {
+      filled: 0,
+      remainingEmpty: 0,
+      skipped: true,
+      message: "Add a first-round match before auto-assigning.",
+    };
+  }
+
+  if (!Array.isArray(people) || !people.length) {
+    return {
+      filled: 0,
+      remainingEmpty: countEmptyFirstRoundSlots(bracket),
+      skipped: true,
+      message: "No people in the pool. Add names on the People tab.",
+    };
+  }
+
+  if (reshuffle) {
+    clearFirstRoundAssignments(bracket);
+  }
+
+  const emptyBefore = countEmptyFirstRoundSlots(bracket);
+  if (!emptyBefore) {
+    return {
+      filled: 0,
+      remainingEmpty: 0,
+      skipped: true,
+      message: "All slots are already filled. Use Reshuffle to re-assign.",
+    };
+  }
+
+  const used = firstRoundAssignedIds(bracket);
+  const available = shuffleInPlace(
+    people.filter((p) => p?.id && !used.has(p.id)).map((p) => String(p.id))
+  );
+
+  // Buckets = sides with empty slots (match order). Round-robin fills one
+  // slot per side per pass so consecutive pool order doesn’t stack a team.
+  const buckets = [];
+  for (const match of first) {
+    for (let si = 0; si < match.sides.length; si++) {
+      const empties = [];
+      match.sides[si].slots.forEach((id, slotIndex) => {
+        if (id == null || id === "") empties.push(slotIndex);
+      });
+      if (empties.length) buckets.push({ match, sideIndex: si, empties });
+    }
+  }
+
+  let filled = 0;
+  let ai = 0;
+  let madeProgress = true;
+  while (ai < available.length && madeProgress) {
+    madeProgress = false;
+    for (const bucket of buckets) {
+      if (ai >= available.length) break;
+      if (!bucket.empties.length) continue;
+      const slotIndex = bucket.empties.shift();
+      bucket.match.sides[bucket.sideIndex].slots[slotIndex] = available[ai];
+      ai += 1;
+      filled += 1;
+      madeProgress = true;
+    }
+  }
+
+  const remainingEmpty = countEmptyFirstRoundSlots(bracket);
+  rebuildLaterRounds(bracket);
+
+  let message;
+  if (filled === 0) {
+    message = "No free people left to assign (everyone is already in this bracket).";
+  } else if (remainingEmpty > 0) {
+    message = `Assigned ${filled} slot${filled === 1 ? "" : "s"}; ${remainingEmpty} still empty (not enough people).`;
+  } else {
+    message = reshuffle
+      ? `Reshuffled — assigned ${filled} slot${filled === 1 ? "" : "s"}.`
+      : `Assigned ${filled} slot${filled === 1 ? "" : "s"}.`;
+  }
+
+  return { filled, remainingEmpty, skipped: false, message };
 }

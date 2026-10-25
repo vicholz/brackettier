@@ -75,9 +75,12 @@
           </div>
           <div class="config-group config-actions">
             <button type="button" class="btn btn-secondary" id="btn-add-match">Add first-round match</button>
+            <button type="button" class="btn btn-primary" id="btn-auto-assign" title="Fill empty slots from the people pool">Auto assign</button>
+            <button type="button" class="btn btn-ghost" id="btn-reshuffle" title="Clear first-round slots and assign everyone again">Reshuffle</button>
             <button type="button" class="btn btn-ghost" id="btn-rebuild">Rebuild later rounds</button>
           </div>
         </div>
+        <p id="assign-status" class="status-line no-print" role="status" aria-live="polite"></p>
 
         <p id="champion-banner" class="champion-banner" hidden></p>
         <div id="bracket-board" class="bracket-board" role="region" aria-label="Tournament bracket"></div>
