@@ -126,6 +126,17 @@ export function setWinner(bracket, roundIndex, matchIndex, sideIndex) {
   return rebuildLaterRounds(bracket);
 }
 
+/**
+ * First-round match count so the pool can fill: ceil(people / (2 * teamSize)).
+ * Two sides × teamSize slots per match. Empty pool → 1 match (UI not empty).
+ */
+export function firstRoundMatchCountForPeople(peopleCount, teamSize) {
+  const size = Math.max(1, Number(teamSize) || 1);
+  const n = Math.max(0, Number(peopleCount) || 0);
+  if (n === 0) return 1;
+  return Math.ceil(n / (2 * size));
+}
+
 export function addFirstRoundMatch(bracket) {
   if (!bracket.rounds.length) bracket.rounds = [[]];
   bracket.rounds[0].push(createMatch(bracket.teamSize));

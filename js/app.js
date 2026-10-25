@@ -9,6 +9,7 @@ import {
 } from "./storage.js";
 import {
   addFirstRoundMatch,
+  firstRoundMatchCountForPeople,
   removeFirstRoundMatch,
   rebuildLaterRounds,
   resizeBracketTeams,
@@ -689,8 +690,9 @@ function wireEvents() {
       teamSize,
       rounds: [[]],
     };
-    addFirstRoundMatch(bracket);
-    addFirstRoundMatch(bracket);
+    // ceil(people / (2 * teamSize)); min 1 when pool is empty
+    const matchCount = firstRoundMatchCountForPeople(state.people.length, teamSize);
+    for (let i = 0; i < matchCount; i++) addFirstRoundMatch(bracket);
     state.brackets.push(bracket);
     state.activeBracketId = bracket.id;
     persist();
