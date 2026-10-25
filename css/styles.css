@@ -896,16 +896,23 @@ body::before {
   }
 }
 
+/* Print-only classic bracket — hidden on screen */
+
+.print-bracket {
+  display: none;
+}
+
 /* Print */
 
 @media print {
   @page {
-    margin: 12mm;
+    size: landscape;
+    margin: 10mm;
   }
 
   body {
     background: white !important;
-    color: black;
+    color: #111;
   }
 
   body::before {
@@ -916,7 +923,15 @@ body::before {
   .app-header,
   .skip-link,
   .toast,
-  dialog {
+  .confetti-canvas,
+  dialog,
+  .bracket-board,
+  .champion-banner,
+  .brackets-empty,
+  .view-intro,
+  .config-bar,
+  .bracket-toolbar,
+  .assign-status {
     display: none !important;
   }
 
@@ -927,7 +942,8 @@ body::before {
     margin: 0;
   }
 
-  #view-brackets {
+  #view-brackets,
+  .bracket-workspace {
     display: block !important;
   }
 
@@ -936,79 +952,147 @@ body::before {
     display: none !important;
   }
 
-  .bracket-workspace {
+  .print-bracket {
     display: block !important;
+    width: 100%;
+    color: #111;
   }
 
-  .champion-banner {
-    background: #eee !important;
-    color: black !important;
-    border: 1px solid #999;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-
-  .bracket-board {
+  .print-heading {
     display: flex;
-    flex-wrap: nowrap;
-    overflow: visible;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.65rem;
+    padding-bottom: 0.35rem;
+    border-bottom: 2px solid #111;
   }
 
-  .bracket-board::before,
-  .bracket-board::after {
-    display: none;
-  }
-
-  .round-col {
-    width: auto;
-    min-width: 10rem;
-    break-inside: avoid;
-  }
-
-  .round-col + .round-col {
-    margin-left: 0.75rem;
-  }
-
-  .match-card {
-    box-shadow: none;
-    border-color: #333;
-    break-inside: avoid;
-  }
-
-  .match-side.is-winner {
-    background: #f0f0f0 !important;
-    border-left-color: #333 !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-
-  .slot-btn {
-    border: 1px solid #999;
-    background: white;
-    min-height: auto;
-    padding: 0.25rem 0.4rem;
-  }
-
-  .win-btn,
-  .match-footer .btn {
-    display: none !important;
-  }
-
-  .match-footer {
-    border-top: 1px solid #ccc;
-  }
-
-  .round-title {
-    color: black;
-  }
-
-  /* Print title from brand */
-  .app-main::before {
-    content: "Brackettier";
-    display: block;
-    font-family: var(--font-display);
-    font-size: 1.5rem;
+  .print-title {
+    margin: 0;
+    font-family: var(--font-display), sans-serif;
+    font-size: 1.35rem;
     font-weight: 800;
-    margin-bottom: 0.75rem;
+    letter-spacing: -0.02em;
+  }
+
+  .print-meta {
+    margin: 0;
+    font-size: 0.8rem;
+    color: #444;
+  }
+
+  .print-tree {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 0;
+    width: 100%;
+    min-height: 0;
+  }
+
+  .print-round {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 0 0.35rem;
+  }
+
+  .print-round-label {
+    font-family: var(--font-display), sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-align: center;
+    margin-bottom: 0.4rem;
+  }
+
+  .print-matches {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    gap: 0.55rem;
+  }
+
+  .print-match {
+    position: relative;
+    border: 1.5px solid #111;
+    background: white;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Connector stub toward the next round */
+  .print-round:not(.print-champion-col) .print-match::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: -0.7rem;
+    width: 0.7rem;
+    border-top: 1.5px solid #111;
+  }
+
+  .print-side {
+    padding: 0.2rem 0.4rem 0.25rem;
+  }
+
+  .print-side + .print-side {
+    border-top: 1.5px solid #111;
+  }
+
+  .print-slot {
+    min-height: 1.05rem;
+    font-size: 0.72rem;
+    line-height: 1.2;
+    padding: 0.12rem 0.1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .print-slot + .print-slot {
+    border-top: 1px dotted #999;
+  }
+
+  .print-slot-blank {
+    border-bottom: 1px solid #333;
+    min-height: 1.15rem;
+  }
+
+  .print-slot-filled {
+    font-weight: 600;
+  }
+
+  .print-champion-col {
+    flex: 0.85 1 0;
+    justify-content: center;
+  }
+
+  .print-champion {
+    margin-top: auto;
+    margin-bottom: auto;
+    border: 1.5px solid #111;
+    padding: 0.35rem 0.45rem;
+  }
+
+  .print-champion .print-slot-blank {
+    border-bottom-width: 1.5px;
+  }
+
+  /* Vertical join ticks between stacked matches feeding the next round */
+  .print-round:not(.print-champion-col) .print-matches {
+    position: relative;
+  }
+
+  .print-round:not(.print-round-seed):not(.print-champion-col) .print-match::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: -0.7rem;
+    width: 0.7rem;
+    border-top: 1.5px solid #111;
   }
 }

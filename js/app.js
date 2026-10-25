@@ -52,6 +52,7 @@ const els = {
   bracketsEmpty: document.getElementById("brackets-empty"),
   teamSize: document.getElementById("team-size"),
   bracketBoard: document.getElementById("bracket-board"),
+  printBracket: document.getElementById("print-bracket"),
   championBanner: document.getElementById("champion-banner"),
   assignStatus: document.getElementById("assign-status"),
   toast: document.getElementById("toast"),
@@ -233,6 +234,102 @@ function renderBracketBoard(bracket) {
     els.championBanner.hidden = true;
     els.championBanner.textContent = "";
   }
+
+  renderPrintBracket(bracket, map);
+}
+
+/** Print-only classic tree: round 1 names, later rounds blank for handwriting. */
+function renderPrintBracket(bracket, map) {
+  const root = els.printBracket;
+  if (!root) return;
+  root.innerHTML = "";
+
+  const heading = document.createElement("header");
+  heading.className = "print-heading";
+  const title = document.createElement("h1");
+  title.className = "print-title";
+  title.textContent = bracket.name || "Bracket";
+  const meta = document.createElement("p");
+  meta.className = "print-meta";
+  meta.textContent = `${bracket.teamSize}v${bracket.teamSize} · Brackettier`;
+  heading.append(title, meta);
+  root.append(heading);
+
+  const tree = document.createElement("div");
+  tree.className = "print-tree";
+  tree.style.setProperty("--print-team-size", String(bracket.teamSize || 1));
+
+  const rounds = bracket.rounds;
+  const total = rounds.length;
+
+  rounds.forEach((round, ri) => {
+    const col = document.createElement("div");
+    col.className = "print-round";
+    if (ri === 0) col.classList.add("print-round-seed");
+    else col.classList.add("print-round-blank");
+
+    const label = document.createElement("div");
+    label.className = "print-round-label";
+    label.textContent = roundName(ri, total);
+    col.append(label);
+
+    const matches = document.createElement("div");
+    matches.className = "print-matches";
+    round.forEach((match) => {
+      matches.append(renderPrintMatch(match, ri === 0, map, bracket.teamSize));
+    });
+    col.append(matches);
+    tree.append(col);
+  });
+
+  // Blank champion line for handwriting
+  const champCol = document.createElement("div");
+  champCol.className = "print-round print-round-blank print-champion-col";
+  const champLabel = document.createElement("div");
+  champLabel.className = "print-round-label";
+  champLabel.textContent = "Champion";
+  const champBox = document.createElement("div");
+  champBox.className = "print-champion";
+  for (let i = 0; i < (bracket.teamSize || 1); i++) {
+    const line = document.createElement("div");
+    line.className = "print-slot print-slot-blank";
+    line.innerHTML = "&nbsp;";
+    champBox.append(line);
+  }
+  champCol.append(champLabel, champBox);
+  tree.append(champCol);
+
+  root.append(tree);
+}
+
+function renderPrintMatch(match, showNames, map, teamSize) {
+  const el = document.createElement("article");
+  el.className = "print-match";
+  for (let si = 0; si < 2; si++) {
+    const side = document.createElement("div");
+    side.className = "print-side";
+    const slots = match.sides[si]?.slots || [];
+    for (let i = 0; i < teamSize; i++) {
+      const line = document.createElement("div");
+      line.className = "print-slot";
+      if (showNames) {
+        const person = slots[i] ? map.get(slots[i]) : null;
+        if (person) {
+          line.textContent = person.name;
+          line.classList.add("print-slot-filled");
+        } else {
+          line.classList.add("print-slot-blank");
+          line.innerHTML = "&nbsp;";
+        }
+      } else {
+        line.classList.add("print-slot-blank");
+        line.innerHTML = "&nbsp;";
+      }
+      side.append(line);
+    }
+    el.append(side);
+  }
+  return el;
 }
 
 function renderMatch(bracket, roundIndex, matchIndex, match, map) {
