@@ -238,6 +238,36 @@ function renderBracketBoard(bracket) {
   renderPrintBracket(bracket, map);
 }
 
+/**
+ * Vertical bands [start,end] in 0–1 for each match, matching feeder pairing
+ * (same pairing as rebuildLaterRounds: pairs 0-1, 2-3, …; odd leftover alone).
+ */
+function printMatchBands(rounds) {
+  const bands = [];
+  const n0 = rounds[0]?.length || 0;
+  bands[0] = Array.from({ length: n0 }, (_, i) => ({
+    start: n0 ? i / n0 : 0,
+    end: n0 ? (i + 1) / n0 : 1,
+  }));
+  for (let r = 1; r < rounds.length; r++) {
+    const prev = bands[r - 1];
+    const count = rounds[r].length;
+    bands[r] = [];
+    for (let i = 0; i < count; i++) {
+      const left = prev[i * 2];
+      const right = prev[i * 2 + 1];
+      if (left && right) {
+        bands[r].push({ start: left.start, end: right.end });
+      } else if (left) {
+        bands[r].push({ start: left.start, end: left.end });
+      } else {
+        bands[r].push({ start: 0, end: 1 });
+      }
+    }
+  }
+  return bands;
+}
+
 /** Print-only classic tree: round 1 names, later rounds blank for handwriting. */
 function renderPrintBracket(bracket, map) {
   const root = els.printBracket;
@@ -261,6 +291,9 @@ function renderPrintBracket(bracket, map) {
 
   const rounds = bracket.rounds;
   const total = rounds.length;
+  const bands = printMatchBands(rounds);
+  const seedCount = rounds[0]?.length || 1;
+  tree.style.setProperty("--print-seed-count", String(seedCount));
 
   rounds.forEach((round, ri) => {
     const col = document.createElement("div");
@@ -275,19 +308,45 @@ function renderPrintBracket(bracket, map) {
 
     const matches = document.createElement("div");
     matches.className = "print-matches";
-    round.forEach((match) => {
-      matches.append(renderPrintMatch(match, ri === 0, map, bracket.teamSize));
+    round.forEach((match, mi) => {
+      const band = bands[ri]?.[mi] || { start: 0, end: 1 };
+      const anchor = document.createElement("div");
+      anchor.className = "print-match-anchor";
+      anchor.style.setProperty("--band-start", String(band.start));
+      anchor.style.setProperty("--band-end", String(band.end));
+      // Vertical join when this match spans more than one prior-round slot
+      if (ri > 0 && band.end - band.start > 1 / seedCount + 0.001) {
+        const rail = document.createElement("span");
+        rail.className = "print-join-rail";
+        rail.setAttribute("aria-hidden", "true");
+        anchor.append(rail);
+      }
+      anchor.append(renderPrintMatch(match, ri === 0, map, bracket.teamSize));
+      matches.append(anchor);
     });
     col.append(matches);
     tree.append(col);
   });
 
-  // Blank champion line for handwriting
+  // Blank champion, centered on the final match band
+  const finalBand = bands[total - 1]?.[0] || { start: 0, end: 1 };
   const champCol = document.createElement("div");
   champCol.className = "print-round print-round-blank print-champion-col";
   const champLabel = document.createElement("div");
   champLabel.className = "print-round-label";
   champLabel.textContent = "Champion";
+  const champMatches = document.createElement("div");
+  champMatches.className = "print-matches";
+  const champAnchor = document.createElement("div");
+  champAnchor.className = "print-match-anchor print-champion-anchor";
+  champAnchor.style.setProperty("--band-start", String(finalBand.start));
+  champAnchor.style.setProperty("--band-end", String(finalBand.end));
+  if (finalBand.end - finalBand.start > 1 / seedCount + 0.001) {
+    const rail = document.createElement("span");
+    rail.className = "print-join-rail";
+    rail.setAttribute("aria-hidden", "true");
+    champAnchor.append(rail);
+  }
   const champBox = document.createElement("div");
   champBox.className = "print-champion";
   for (let i = 0; i < (bracket.teamSize || 1); i++) {
@@ -296,7 +355,9 @@ function renderPrintBracket(bracket, map) {
     line.innerHTML = "&nbsp;";
     champBox.append(line);
   }
-  champCol.append(champLabel, champBox);
+  champAnchor.append(champBox);
+  champMatches.append(champAnchor);
+  champCol.append(champLabel, champMatches);
   tree.append(champCol);
 
   root.append(tree);

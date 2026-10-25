@@ -983,12 +983,15 @@ body::before {
   }
 
   .print-tree {
+    --print-gutter: 1.1rem;
+    /* Per-seed-row height must exceed match box height so bands don’t overlap */
+    --print-row-h: calc(2.75rem + var(--print-team-size, 1) * 1.15rem);
     display: flex;
     flex-direction: row;
     align-items: stretch;
     gap: 0;
     width: 100%;
-    min-height: 0;
+    min-height: calc(var(--print-seed-count, 6) * var(--print-row-h));
   }
 
   .print-round {
@@ -996,70 +999,113 @@ body::before {
     min-width: 0;
     display: flex;
     flex-direction: column;
-    padding: 0 0.35rem;
+    padding: 0 calc(var(--print-gutter) / 2);
   }
 
   .print-round-label {
+    flex: 0 0 auto;
     font-family: var(--font-display), sans-serif;
     font-size: 0.7rem;
     font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
     text-align: center;
-    margin-bottom: 0.4rem;
+    margin-bottom: 0.35rem;
   }
 
   .print-matches {
+    position: relative;
     flex: 1 1 auto;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-around;
-    gap: 0.55rem;
+    min-height: 12rem;
   }
 
-  .print-match {
+  /* Feeder band: centers the match box on the pair from the prior round */
+  .print-match-anchor {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(var(--band-start) * 100%);
+    height: calc((var(--band-end) - var(--band-start)) * 100%);
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    padding: 0.12rem 0;
+  }
+
+  .print-match,
+  .print-champion {
     position: relative;
+    width: 100%;
     border: 1.5px solid #111;
     background: white;
     break-inside: avoid;
     page-break-inside: avoid;
   }
 
-  /* Connector stub toward the next round */
-  .print-round:not(.print-champion-col) .print-match::after {
+  /* Horizontal connector toward next round (mid of feeder band) */
+  .print-round:not(.print-champion-col) .print-match-anchor::after {
     content: "";
     position: absolute;
     top: 50%;
-    right: -0.7rem;
-    width: 0.7rem;
+    right: calc(var(--print-gutter) / -2);
+    width: calc(var(--print-gutter) / 2);
     border-top: 1.5px solid #111;
+  }
+
+  /* Horizontal connector from previous round into this match */
+  .print-round:not(.print-round-seed) .print-match-anchor::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: calc(var(--print-gutter) / -2);
+    width: calc(var(--print-gutter) / 2);
+    border-top: 1.5px solid #111;
+  }
+
+  /* Vertical join rail for matches that span a pair of feeders */
+  .print-join-rail {
+    position: absolute;
+    left: calc(var(--print-gutter) / -2);
+    top: 12%;
+    bottom: 12%;
+    border-left: 1.5px solid #111;
+    pointer-events: none;
   }
 
   .print-side {
-    padding: 0.2rem 0.4rem 0.25rem;
+    padding: 0.2rem 0.45rem;
+    border: none;
+    background: transparent;
   }
 
+  /* No inner rules — outer box + tree connectors only */
   .print-side + .print-side {
-    border-top: 1.5px solid #111;
+    border: none;
+    border-top: none;
+    box-shadow: none;
   }
 
   .print-slot {
-    min-height: 1.05rem;
-    font-size: 0.72rem;
+    min-height: 0.95rem;
+    font-size: 0.7rem;
     line-height: 1.2;
-    padding: 0.12rem 0.1rem;
+    padding: 0.06rem 0.05rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    border: none;
+    box-shadow: none;
   }
 
   .print-slot + .print-slot {
-    border-top: 1px dotted #999;
+    border: none;
+    border-top: none;
   }
 
   .print-slot-blank {
-    border-bottom: 1px solid #333;
-    min-height: 1.15rem;
+    min-height: 0.95rem;
+    border: none;
+    border-bottom: none;
   }
 
   .print-slot-filled {
@@ -1067,32 +1113,10 @@ body::before {
   }
 
   .print-champion-col {
-    flex: 0.85 1 0;
-    justify-content: center;
+    flex: 0.9 1 0;
   }
 
   .print-champion {
-    margin-top: auto;
-    margin-bottom: auto;
-    border: 1.5px solid #111;
     padding: 0.35rem 0.45rem;
-  }
-
-  .print-champion .print-slot-blank {
-    border-bottom-width: 1.5px;
-  }
-
-  /* Vertical join ticks between stacked matches feeding the next round */
-  .print-round:not(.print-champion-col) .print-matches {
-    position: relative;
-  }
-
-  .print-round:not(.print-round-seed):not(.print-champion-col) .print-match::before {
-    content: "";
-    position: absolute;
-    top: 50%;
-    left: -0.7rem;
-    width: 0.7rem;
-    border-top: 1.5px solid #111;
   }
 }
