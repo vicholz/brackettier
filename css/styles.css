@@ -897,13 +897,21 @@ body::before {
     display: flex;
     flex-wrap: nowrap;
     overflow: visible;
-    gap: 0.75rem;
+  }
+
+  .bracket-board::before,
+  .bracket-board::after {
+    display: none;
   }
 
   .round-col {
     width: auto;
     min-width: 10rem;
     break-inside: avoid;
+  }
+
+  .round-col + .round-col {
+    margin-left: 0.75rem;
   }
 
   .match-card {
