@@ -29,6 +29,7 @@ import {
   tryLoadFromHash,
   clearShareHash,
 } from "./share.js";
+import { celebrateConfetti } from "./confetti.js";
 
 let state = createEmptyState();
 let slotContext = null;
@@ -285,9 +286,13 @@ function renderMatch(bracket, roundIndex, matchIndex, match, map) {
     if (match.winner === si) win.classList.add("is-selected");
     win.disabled = !canPickWinner(match, si) || !sideHasAnyone(side);
     win.addEventListener("click", () => {
+      const hadChampion = Boolean(getChampion(bracket));
       setWinner(bracket, roundIndex, matchIndex, si);
       persist();
       renderBracketBoard(bracket);
+      const hasChampion = Boolean(getChampion(bracket));
+      // Celebrate only when a champion is newly decided (final match)
+      if (!hadChampion && hasChampion) celebrateConfetti();
     });
 
     meta.append(label, win);
