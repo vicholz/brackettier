@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="description" content="Brackettier — make and share tournament brackets in your browser." />
+  <title>Brackettier</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="app-header no-print">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <h1 class="brand-name">Brackettier</h1>
+    </div>
+    <nav class="app-nav" aria-label="Primary">
+      <button type="button" class="nav-btn is-active" data-view="people">People</button>
+      <button type="button" class="nav-btn" data-view="brackets">Brackets</button>
+      <button type="button" class="nav-btn" data-view="data">Data</button>
+    </nav>
+    <div class="header-actions">
+      <button type="button" class="btn btn-ghost" id="btn-print" title="Print current bracket">Print</button>
+    </div>
+  </header>
+
+  <main id="main" class="app-main">
+    <!-- People -->
+    <section id="view-people" class="view is-active" aria-labelledby="people-heading">
+      <div class="view-intro no-print">
+        <h2 id="people-heading">People</h2>
+        <p>Build a shared pool of names. Assign them into any bracket.</p>
+      </div>
+      <form id="person-form" class="inline-form no-print" autocomplete="off">
+        <label class="sr-only" for="person-name">Name</label>
+        <input id="person-name" name="name" type="text" maxlength="80" placeholder="Add a person…" required />
+        <button type="submit" class="btn btn-primary">Add</button>
+      </form>
+      <ul id="people-list" class="people-list" aria-live="polite"></ul>
+      <p id="people-empty" class="empty-hint">No people yet. Add names above.</p>
+    </section>
+
+    <!-- Brackets -->
+    <section id="view-brackets" class="view" aria-labelledby="brackets-heading" hidden>
+      <div class="view-intro no-print">
+        <h2 id="brackets-heading">Brackets</h2>
+        <p>Create named brackets, set team size, fill matches, and crown a champion.</p>
+      </div>
+
+      <div class="bracket-toolbar no-print">
+        <label class="field-label" for="bracket-select">Active bracket</label>
+        <div class="toolbar-row">
+          <select id="bracket-select" aria-label="Select bracket"></select>
+          <button type="button" class="btn btn-primary" id="btn-new-bracket">New</button>
+          <button type="button" class="btn btn-ghost" id="btn-rename-bracket">Rename</button>
+          <button type="button" class="btn btn-danger" id="btn-delete-bracket">Delete</button>
+        </div>
+      </div>
+
+      <div id="bracket-workspace" class="bracket-workspace" hidden>
+        <div class="config-bar no-print">
+          <div class="config-group">
+            <label for="team-size">Team size (slots per side)</label>
+            <select id="team-size">
+              <option value="1">1v1</option>
+              <option value="2">2v2</option>
+              <option value="3">3v3</option>
+              <option value="4">4v4</option>
+              <option value="5">5v5</option>
+            </select>
+          </div>
+          <div class="config-group config-actions">
+            <button type="button" class="btn btn-secondary" id="btn-add-match">Add first-round match</button>
+            <button type="button" class="btn btn-ghost" id="btn-rebuild">Rebuild later rounds</button>
+          </div>
+        </div>
+
+        <p id="champion-banner" class="champion-banner" hidden></p>
+        <div id="bracket-board" class="bracket-board" role="region" aria-label="Tournament bracket"></div>
+      </div>
+
+      <p id="brackets-empty" class="empty-hint">No brackets yet. Create one to get started.</p>
+    </section>
+
+    <!-- Data -->
+    <section id="view-data" class="view" aria-labelledby="data-heading" hidden>
+      <div class="view-intro no-print">
+        <h2 id="data-heading">Data</h2>
+        <p>Everything saves to <strong>localStorage</strong> automatically. Export, import, or share a link.</p>
+      </div>
+
+      <div class="data-panel no-print">
+        <article class="data-card">
+          <h3>Export</h3>
+          <p>Download the full app state (people, brackets, winners, config) as JSON.</p>
+          <button type="button" class="btn btn-primary" id="btn-export">Download JSON</button>
+          <button type="button" class="btn btn-ghost" id="btn-copy-json">Copy JSON</button>
+        </article>
+
+        <article class="data-card">
+          <h3>Import</h3>
+          <p>Default: <strong>replace</strong> all current data with the file. Use merge to keep existing people/brackets and add new ones by id.</p>
+          <div class="import-controls">
+            <label class="radio-row"><input type="radio" name="import-mode" value="replace" checked /> Replace</label>
+            <label class="radio-row"><input type="radio" name="import-mode" value="merge" /> Merge</label>
+          </div>
+          <input type="file" id="import-file" accept="application/json,.json" hidden />
+          <button type="button" class="btn btn-secondary" id="btn-import-file">Choose JSON file…</button>
+          <label class="field-label" for="paste-json">Or paste JSON</label>
+          <textarea id="paste-json" rows="6" placeholder='{"version":1,...}'></textarea>
+          <button type="button" class="btn btn-secondary" id="btn-import-paste">Import pasted JSON</button>
+        </article>
+
+        <article class="data-card">
+          <h3>Share link</h3>
+          <p>Embeds compressed state in the URL hash when it fits. If the link would be too large, copy JSON instead.</p>
+          <button type="button" class="btn btn-primary" id="btn-share-link">Copy share link</button>
+          <p id="share-status" class="status-line" role="status" aria-live="polite"></p>
+        </article>
+
+        <article class="data-card">
+          <h3>Reset</h3>
+          <p>Clear all local data for this site.</p>
+          <button type="button" class="btn btn-danger" id="btn-reset">Clear everything</button>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast no-print" role="status" aria-live="polite" hidden></div>
+
+  <!-- Dialogs -->
+  <dialog id="dialog-bracket" class="app-dialog no-print">
+    <form method="dialog" id="form-new-bracket">
+      <h2 id="dialog-bracket-title">New bracket</h2>
+      <label for="new-bracket-name">Name</label>
+      <input id="new-bracket-name" type="text" maxlength="80" required placeholder="Summer Slam" />
+      <label for="new-bracket-size">Team size</label>
+      <select id="new-bracket-size">
+        <option value="1">1v1</option>
+        <option value="2">2v2</option>
+        <option value="3">3v3</option>
+        <option value="4">4v4</option>
+        <option value="5">5v5</option>
+      </select>
+      <div class="dialog-actions">
+        <button type="submit" class="btn btn-primary" value="ok">Create</button>
+        <button type="submit" class="btn btn-ghost" value="cancel" formnovalidate>Cancel</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="dialog-slot" class="app-dialog no-print">
+    <form method="dialog" id="form-slot">
+      <h2>Assign person</h2>
+      <p id="slot-dialog-meta" class="dialog-meta"></p>
+      <label for="slot-person">Person</label>
+      <select id="slot-person"></select>
+      <div class="dialog-actions">
+        <button type="submit" class="btn btn-primary" value="ok">Assign</button>
+        <button type="button" class="btn btn-ghost" id="btn-clear-slot">Clear slot</button>
+        <button type="submit" class="btn btn-ghost" value="cancel" formnovalidate>Cancel</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
