@@ -30,6 +30,10 @@ Or open `index.html` directly in a modern browser (ES modules + `localStorage`).
   - Import from file or paste (**replace** is the default; optional **merge** by id)
   - Share link embeds gzip-compressed state in the URL hash (`#bt=…`); if too large, copy JSON instead
 
+## Version display
+
+The header shows **Version** plus a short GitHub commit SHA (same pattern as [QR Maker](https://github.com/vicholz/qr_maker), Fold, Label Maker). It loads the tip of `main` from the GitHub API and links to that commit — there is no separate `VERSION` file or semver constant to bump; shipping to `main` updates the displayed version automatically.
+
 ## Project layout
 
 ```

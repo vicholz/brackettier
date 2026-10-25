@@ -124,6 +124,13 @@ body::before {
   min-width: 0;
 }
 
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
 .brand-mark {
   width: 1.35rem;
   height: 1.35rem;
@@ -146,6 +153,27 @@ body::before {
   font-size: clamp(1.45rem, 4vw, 1.85rem);
   letter-spacing: -0.02em;
   line-height: 1;
+}
+
+/* Same pattern as qr_maker / fold / label_maker: live GitHub main SHA */
+.app-version {
+  margin: 0;
+  font-size: 0.7rem;
+  color: color-mix(in srgb, var(--chalk) 62%, transparent);
+  letter-spacing: 0.02em;
+  overflow-wrap: anywhere;
+  line-height: 1.2;
+}
+
+.app-version a {
+  color: inherit;
+  font-family: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
+  text-underline-offset: 2px;
+}
+
+.app-version a:hover,
+.app-version a:focus-visible {
+  color: var(--brass-hot);
 }
 
 .app-nav {

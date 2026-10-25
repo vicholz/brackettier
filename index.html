@@ -25,7 +25,10 @@
   <header class="app-header no-print">
     <div class="brand">
       <span class="brand-mark" aria-hidden="true"></span>
-      <h1 class="brand-name">Brackettier</h1>
+      <div class="brand-text">
+        <h1 class="brand-name">Brackettier</h1>
+        <p class="app-version" id="app-version" hidden></p>
+      </div>
     </div>
     <nav class="app-nav" aria-label="Primary">
       <button type="button" class="nav-btn is-active" data-view="people">People</button>
@@ -185,5 +188,37 @@
   </dialog>
 
   <script type="module" src="js/app.js"></script>
+  <script>
+    const APP_REPO = "vicholz/brackettier";
+
+    function renderAppVersion(sha) {
+      const el = document.querySelector("#app-version");
+      if (!el || !sha) return;
+      el.replaceChildren();
+      el.append("Version ");
+      const a = document.createElement("a");
+      a.href = "https://github.com/" + APP_REPO + "/commit/" + sha;
+      a.target = "_blank";
+      a.rel = "noopener";
+      a.textContent = sha.slice(0, 7);
+      a.title = "View the diff for this version";
+      el.appendChild(a);
+      el.hidden = false;
+    }
+
+    function loadAppVersion() {
+      fetch("https://api.github.com/repos/" + APP_REPO + "/commits/main")
+        .then(function (res) {
+          if (!res.ok) throw new Error(res.status);
+          return res.json();
+        })
+        .then(function (commit) {
+          if (commit.sha) renderAppVersion(commit.sha);
+        })
+        .catch(function () {});
+    }
+
+    loadAppVersion();
+  </script>
 </body>
 </html>
