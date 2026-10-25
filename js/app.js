@@ -434,7 +434,40 @@ function loadDemo() {
   if (els.assignStatus) {
     els.assignStatus.textContent = "Demo loaded: 12 whimsical names in Whimsy Cup (1v1).";
   }
+  syncDemoControl();
   toast("Demo loaded — 12 names, Whimsy Cup bracket");
+}
+
+/** Leave `#demo`, clear sample data, return to an empty app. */
+function exitDemo() {
+  if ((location.hash || "").replace(/^#/, "").toLowerCase() === "demo") {
+    history.replaceState(null, "", `${location.pathname}${location.search}`);
+  }
+  clearState();
+  state = createEmptyState();
+  persist();
+  renderPeople();
+  renderBrackets();
+  setView("people");
+  if (els.assignStatus) els.assignStatus.textContent = "";
+  syncDemoControl();
+  toast("Exited demo");
+}
+
+function syncDemoControl() {
+  const el = document.getElementById("btn-demo");
+  if (!el) return;
+  if (isDemoDeepLink()) {
+    el.textContent = "EXIT DEMO";
+    el.setAttribute("href", "#");
+    el.title = "Exit demo and clear sample data";
+    el.setAttribute("aria-label", "Exit demo");
+  } else {
+    el.textContent = "DEMO";
+    el.setAttribute("href", "#demo");
+    el.title = "Load a sample tournament with 12 whimsical names";
+    el.setAttribute("aria-label", "Load demo");
+  }
 }
 
 /* —— Events —— */
@@ -601,15 +634,16 @@ function wireEvents() {
   });
 
   const demoLink = document.getElementById("btn-demo");
-  // Re-run when already on #demo (hashchange won't fire for same hash)
   demoLink.addEventListener("click", (e) => {
-    if (isDemoDeepLink()) {
+    if (isDemoDeepLink() || demoLink.textContent.trim() === "EXIT DEMO") {
       e.preventDefault();
-      loadDemo();
+      exitDemo();
     }
+    // Otherwise navigate to #demo; hashchange runs loadDemo
   });
   window.addEventListener("hashchange", () => {
     if (isDemoDeepLink()) loadDemo();
+    else syncDemoControl();
   });
 
   document.getElementById("btn-print").addEventListener("click", () => {
@@ -715,6 +749,7 @@ function isDemoDeepLink() {
 
 async function boot() {
   wireEvents();
+  syncDemoControl();
 
   if (isDemoDeepLink()) {
     loadDemo();
@@ -737,6 +772,7 @@ async function boot() {
   renderPeople();
   renderBrackets();
   setView(state.brackets.length ? "brackets" : "people");
+  syncDemoControl();
 }
 
 boot();

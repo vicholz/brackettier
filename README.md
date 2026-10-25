@@ -4,7 +4,7 @@ Browser-only tournament bracket maker. Vanilla HTML, CSS, and JavaScript — no 
 
 **Live:** [https://vicholz.github.io/brackettier/](https://vicholz.github.io/brackettier/)
 
-**Demo link:** [https://vicholz.github.io/brackettier/#demo](https://vicholz.github.io/brackettier/#demo) — on load (or when the hash becomes `#demo`), seeds 12 whimsical names into a 1v1 “Whimsy Cup” bracket (replaces local data; no confirm). The `#demo` hash stays so refresh and the header **DEMO** link (`href="#demo"`) keep working; click DEMO again while already on `#demo` re-runs the seed.
+**Demo link:** [https://vicholz.github.io/brackettier/#demo](https://vicholz.github.io/brackettier/#demo) — on load (or when the hash becomes `#demo`), seeds 12 whimsical names into a 1v1 “Whimsy Cup” bracket (replaces local data; no confirm). While on `#demo`, the header control reads **EXIT DEMO** and clears the hash plus sample data back to an empty app.
 
 ## Open locally
 
