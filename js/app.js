@@ -574,11 +574,8 @@ function wireEvents() {
   });
 
   document.getElementById("btn-demo").addEventListener("click", () => {
-    if (
-      state.people.length || state.brackets.length
-        ? !confirm("Replace all current data with the DEMO tournament?")
-        : false
-    ) {
+    const hasData = state.people.length > 0 || state.brackets.length > 0;
+    if (hasData && !confirm("Replace all current data with the DEMO tournament?")) {
       return;
     }
     loadDemo();
