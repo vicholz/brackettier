@@ -5,6 +5,7 @@ import {
   createEmptyState,
   normalizeState,
   mergeStates,
+  sortPeopleAlphabetically,
   uid,
 } from "./storage.js";
 import {
@@ -22,6 +23,8 @@ import {
   autoAssignPeople,
   countEmptyFirstRoundSlots,
   clearBracketAssignments,
+  personAssignedInBracket,
+  removePersonFromBracket,
 } from "./bracket.js";
 import {
   stateToJson,
@@ -127,7 +130,10 @@ function renderPeople() {
         return;
       }
       person.name = name;
+      sortPeopleAlphabetically(state.people);
       persist();
+      renderPeople();
+      renderBrackets();
       toast("Saved name");
     });
 
@@ -136,22 +142,23 @@ function renderPeople() {
     remove.className = "btn btn-danger";
     remove.textContent = "Remove";
     remove.addEventListener("click", () => {
-      if (!confirm(`Remove ${person.name}?`)) return;
+      const affected = state.brackets.filter((b) =>
+        personAssignedInBracket(b, person.id)
+      );
+      const msg = affected.length
+        ? `Remove ${person.name}? They are assigned in ${affected.length} bracket(s); their slots will be cleared and those brackets rebuilt.`
+        : `Remove ${person.name}?`;
+      if (!confirm(msg)) return;
+
       state.people = state.people.filter((p) => p.id !== person.id);
-      // Clear references in brackets
       for (const bracket of state.brackets) {
-        for (const round of bracket.rounds) {
-          for (const match of round) {
-            for (const side of match.sides) {
-              side.slots = side.slots.map((id) => (id === person.id ? null : id));
-            }
-          }
-        }
-        rebuildLaterRounds(bracket);
+        removePersonFromBracket(bracket, person.id);
       }
+      sortPeopleAlphabetically(state.people);
       persist();
       renderPeople();
-      toast("Removed");
+      renderBrackets();
+      toast(affected.length ? "Removed — brackets updated" : "Removed");
     });
 
     li.append(input, remove);
@@ -589,7 +596,9 @@ const DEMO_NAMES = [
 
 /** Replace app state with a clean, repeatable 12-person 1v1 demo bracket. */
 function loadDemo() {
-  const people = DEMO_NAMES.map((name) => ({ id: uid(), name }));
+  const people = sortPeopleAlphabetically(
+    DEMO_NAMES.map((name) => ({ id: uid(), name }))
+  );
   const bracket = {
     id: uid(),
     name: "Whimsy Cup",
@@ -663,6 +672,7 @@ function wireEvents() {
     const name = els.personName.value.trim();
     if (!name) return;
     state.people.push({ id: uid(), name });
+    sortPeopleAlphabetically(state.people);
     els.personName.value = "";
     persist();
     renderPeople();

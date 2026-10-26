@@ -215,6 +215,44 @@ export function firstRoundAssignedIds(bracket) {
   return used;
 }
 
+/** True if this person id appears in any match slot in the bracket. */
+export function personAssignedInBracket(bracket, personId) {
+  if (!personId) return false;
+  for (const round of bracket.rounds || []) {
+    for (const match of round) {
+      for (const side of match.sides || []) {
+        if (side.slots?.some((id) => id === personId)) return true;
+      }
+    }
+  }
+  return false;
+}
+
+/**
+ * Remove a person from every slot, drop winners whose side is now empty,
+ * then rebuild later rounds so advances stay consistent (no ghost ids).
+ */
+export function removePersonFromBracket(bracket, personId) {
+  let cleared = 0;
+  for (const round of bracket.rounds || []) {
+    for (const match of round) {
+      for (const side of match.sides || []) {
+        side.slots = side.slots.map((id) => {
+          if (id !== personId) return id;
+          cleared += 1;
+          return null;
+        });
+      }
+      if (match.winner != null && !sideHasAnyone(match.sides[match.winner])) {
+        match.winner = null;
+        match.bye = false;
+      }
+    }
+  }
+  rebuildLaterRounds(bracket);
+  return { cleared };
+}
+
 export function countEmptyFirstRoundSlots(bracket) {
   let empty = 0;
   for (const match of bracket.rounds[0] || []) {

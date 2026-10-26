@@ -43,6 +43,7 @@ export function normalizeState(input) {
           name: String(p.name || "").trim() || "Unnamed",
         }))
     : [];
+  sortPeopleAlphabetically(people);
 
   const brackets = Array.isArray(input.brackets)
     ? input.brackets
@@ -62,6 +63,18 @@ export function normalizeState(input) {
     brackets,
     activeBracketId,
   };
+}
+
+/** Case-insensitive A–Z by name (mutates and returns the array). */
+export function sortPeopleAlphabetically(people) {
+  if (!Array.isArray(people)) return people;
+  people.sort((a, b) =>
+    String(a?.name || "").localeCompare(String(b?.name || ""), undefined, {
+      sensitivity: "base",
+      numeric: true,
+    })
+  );
+  return people;
 }
 
 function normalizeBracket(b) {
