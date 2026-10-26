@@ -23,7 +23,7 @@ Or open `index.html` directly in a modern browser (ES modules + `localStorage`).
 - **People** — shared name pool; create, edit, remove
 - **Named brackets** — multiple brackets, each with its own team size (1v1–5v5)
 - **Play** — assign people to first-round slots (or **Auto assign** / confirmable **Reshuffle**), pick winners; later rounds fill automatically until a champion
-- **Responsive + print** — phone/tablet/desktop layouts; Print uses a landscape classic bracket tree (round-1 names, later rounds blank for handwriting)
+- **Responsive + print** — phone/tablet/desktop layouts; Print uses a landscape classic bracket tree with assigned names in every round (and the champion when decided)
 - **Persistence** — full state in `localStorage` (`brackettier:v1`), auto-saved on change
 - **JSON import / export / share**
   - Download or copy JSON

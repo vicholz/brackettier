@@ -276,7 +276,7 @@ function printMatchBands(rounds) {
   return bands;
 }
 
-/** Print-only classic tree: round 1 names, later rounds blank for handwriting. */
+/** Print-only classic tree: show assigned names in every round + champion. */
 function renderPrintBracket(bracket, map) {
   const root = els.printBracket;
   if (!root) return;
@@ -307,7 +307,6 @@ function renderPrintBracket(bracket, map) {
     const col = document.createElement("div");
     col.className = "print-round";
     if (ri === 0) col.classList.add("print-round-seed");
-    else col.classList.add("print-round-blank");
 
     const label = document.createElement("div");
     label.className = "print-round-label";
@@ -348,16 +347,16 @@ function renderPrintBracket(bracket, map) {
         tree.dataset.champBandEnd = String(band.end);
         tree.dataset.champBoxMid = String(boxMid);
       }
-      anchor.append(renderPrintMatch(match, ri === 0, map, bracket.teamSize));
+      anchor.append(renderPrintMatch(match, map, bracket.teamSize));
       matches.append(anchor);
     });
     col.append(matches);
     tree.append(col);
   });
 
-  // Blank champion — same vertical mid as Final; horizontal only (no join rail)
+  // Champion — same vertical mid as Final; name when decided, else blank
   const champCol = document.createElement("div");
-  champCol.className = "print-round print-round-blank print-champion-col";
+  champCol.className = "print-round print-champion-col";
   const champLabel = document.createElement("div");
   champLabel.className = "print-round-label";
   champLabel.textContent = "Champion";
@@ -376,10 +375,18 @@ function renderPrintBracket(bracket, map) {
   champAnchor.style.setProperty("--box-mid", tree.dataset.champBoxMid || "0.5");
   const champBox = document.createElement("div");
   champBox.className = "print-champion";
+  const champSide = getChampion(bracket);
   for (let i = 0; i < (bracket.teamSize || 1); i++) {
     const line = document.createElement("div");
-    line.className = "print-slot print-slot-blank";
-    line.innerHTML = "&nbsp;";
+    line.className = "print-slot";
+    const person = champSide?.slots?.[i] ? map.get(champSide.slots[i]) : null;
+    if (person) {
+      line.textContent = person.name;
+      line.classList.add("print-slot-filled");
+    } else {
+      line.classList.add("print-slot-blank");
+      line.innerHTML = "&nbsp;";
+    }
     champBox.append(line);
   }
   champAnchor.append(champBox);
@@ -390,8 +397,8 @@ function renderPrintBracket(bracket, map) {
   root.append(tree);
 }
 
-/** Match box with Side A / Side B split by an inner divider. */
-function renderPrintMatch(match, showNames, map, teamSize) {
+/** Match box with Side A / Side B split by an inner divider; names from live slots. */
+function renderPrintMatch(match, map, teamSize) {
   const el = document.createElement("article");
   el.className = "print-match";
   for (let si = 0; si < 2; si++) {
@@ -401,15 +408,10 @@ function renderPrintMatch(match, showNames, map, teamSize) {
     for (let i = 0; i < teamSize; i++) {
       const line = document.createElement("div");
       line.className = "print-slot";
-      if (showNames) {
-        const person = slots[i] ? map.get(slots[i]) : null;
-        if (person) {
-          line.textContent = person.name;
-          line.classList.add("print-slot-filled");
-        } else {
-          line.classList.add("print-slot-blank");
-          line.innerHTML = "&nbsp;";
-        }
+      const person = slots[i] ? map.get(slots[i]) : null;
+      if (person) {
+        line.textContent = person.name;
+        line.classList.add("print-slot-filled");
       } else {
         line.classList.add("print-slot-blank");
         line.innerHTML = "&nbsp;";
